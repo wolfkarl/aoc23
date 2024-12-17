@@ -52,7 +52,7 @@ class Update:
     def make_correct(self):
 
         tries = 0
-        MAX = 10_000
+        MAX = 10_000_000
 
         while tries <= MAX:
             tries += 1
@@ -105,6 +105,7 @@ print(sum(middle_pages))
 
 incorrect = [update for update in updates if not update.is_correct()]
 corrected = [update.make_correct() for update in incorrect]
+print(corrected.count(False))
 corrected_middle = [update.middle_page() for update in incorrect]
 
 print(sum(corrected_middle))
