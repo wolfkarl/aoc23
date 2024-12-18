@@ -19,6 +19,7 @@ class Space:
         self.open = defaultdict(set) # distance -> x,y
         self.open[0] = [start]
         self.closed = set() # x,y
+        self.prevs = dict()
 
         # self.print()
 
@@ -34,17 +35,26 @@ class Space:
                 ix, iy = self.open[shortest_distance].pop()
 
                 if (ix, iy) == goal:
-                    return shortest_distance
+                    break
 
                 else:
 
                     for nb in self.get_neighbours(ix, iy):
                         self.open[shortest_distance+1].add(nb)
+                        self.prevs[nb] = (ix, iy)
 
                     self.closed.add((ix, iy))
             except IndexError:
                 self.print()
-                return -1
+                return None
+            
+        # reconstruct path
+        path = [goal]
+        while start not in path:
+            path.append(self.prevs[path[-1]])
+
+        return list(reversed(path))
+
 
     def print(self):
         for i in range(self.size):
@@ -74,17 +84,27 @@ class Space:
             nbs.append((nx, ny))
         return nbs
 
-# corruption_lines = puzzle.examples[0].input_data.split("\n")
+# corruption_lines = puzzle.examples[0].input_data.split("\n")[:12]
 # size = 7
 
 corruption_lines = puzzle.input_data.split("\n")
 size = 70 + 1
 
-for i in progressbar(range(len(corruption_lines))):
+sp = Space(corruption_lines[:1024], size)
+path = sp.find_shortest_path()
+print(path, len(path)-1)
+
+
+for i in progressbar(range(1024, len(corruption_lines))):
     # brute force approach, we could also store the actual shortest path and
     # skip ahead when the new byte is not on the path
-    sp = Space(corruption_lines[:i+1], size)
-    path = sp.find_shortest_path()
-    if path < 0:
-        print(i, corruption_lines[i], path)
+    spi = Space(corruption_lines[:i+1], size)
+    bi = spi.corruptions[i]
+
+    if not tuple(bi)in path:
+        continue
+
+    path = spi.find_shortest_path()
+    if not path:
+        print(i, corruption_lines[i])
         break
